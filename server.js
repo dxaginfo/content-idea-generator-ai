@@ -2,12 +2,16 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const connectDB = require('./config/db');
 
 // Load environment variables
 dotenv.config();
 
 // Initialize Express app
 const app = express();
+
+// Connect to MongoDB
+connectDB();
 
 // Middleware
 app.use(express.json({ extended: false }));
@@ -18,11 +22,9 @@ app.get('/api', (req, res) => {
   res.json({ msg: 'Welcome to the AI Content Idea Generator API' });
 });
 
-// Define API routes here
-// app.use('/api/auth', require('./routes/auth'));
-// app.use('/api/ideas', require('./routes/ideas'));
-// app.use('/api/trends', require('./routes/trends'));
-// app.use('/api/calendar', require('./routes/calendar'));
+// Define API routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/ideas', require('./routes/ideas'));
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
