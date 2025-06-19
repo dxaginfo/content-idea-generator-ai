@@ -1,10 +1,19 @@
 import React, { useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { ThemeProvider, createTheme } from '@mui/material';
+import CssBaseline from '@mui/material/CssBaseline';
 
-// Layouts
+import store from './store';
+import { loadUser } from './features/auth/authSlice';
+import { setAuthToken } from './utils/setAuthToken';
+
+// Layout
 import MainLayout from './layouts/MainLayout';
+
+// Components
+import AlertComponent from './components/AlertComponent';
+import PrivateRoute from './components/PrivateRoute';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -14,22 +23,23 @@ import GenerateIdeas from './pages/GenerateIdeas';
 import SavedIdeas from './pages/SavedIdeas';
 import NotFound from './pages/NotFound';
 
-// Components
-import AlertComponent from './components/AlertComponent';
-import PrivateRoute from './components/PrivateRoute';
+// Check for token in localStorage
+if (localStorage.token) {
+  setAuthToken(localStorage.token);
+}
 
-// Redux actions
-import { loadUser } from './features/auth/authSlice';
-import { setAuthToken } from './utils/setAuthToken';
-
-// Theme
+// Create theme
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#4a148c',
+      main: '#1976d2',
+      light: '#42a5f5',
+      dark: '#1565c0',
     },
     secondary: {
-      main: '#ff6d00',
+      main: '#f50057',
+      light: '#ff4081',
+      dark: '#c51162',
     },
     background: {
       default: '#f5f5f5',
@@ -38,47 +48,53 @@ const theme = createTheme({
   typography: {
     fontFamily: [
       'Roboto',
-      '-apple-system',
-      'BlinkMacSystemFont',
-      'Segoe UI',
-      'Oxygen',
-      'Ubuntu',
-      'Cantarell',
-      'Fira Sans',
-      'Droid Sans',
-      'Helvetica Neue',
+      'Arial',
       'sans-serif',
     ].join(','),
   },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          borderRadius: 8,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+        },
+      },
+    },
+  },
 });
 
-// Check if token is in localStorage
-if (localStorage.token) {
-  setAuthToken(localStorage.token);
-}
-
 const App = () => {
-  const dispatch = useDispatch();
-
   useEffect(() => {
-    dispatch(loadUser());
-  }, [dispatch]);
+    store.dispatch(loadUser());
+  }, []);
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <AlertComponent />
-      <Routes>
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<PrivateRoute component={Dashboard} />} />
-          <Route path="generate" element={<PrivateRoute component={GenerateIdeas} />} />
-          <Route path="saved" element={<PrivateRoute component={SavedIdeas} />} />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Router>
+          <AlertComponent />
+          <Routes>
+            <Route path="/" element={<MainLayout />}>
+              <Route index element={<PrivateRoute component={Dashboard} />} />
+              <Route path="generate" element={<PrivateRoute component={GenerateIdeas} />} />
+              <Route path="saved" element={<PrivateRoute component={SavedIdeas} />} />
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </Router>
+      </ThemeProvider>
+    </Provider>
   );
 };
 
